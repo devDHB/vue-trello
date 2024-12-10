@@ -21,8 +21,21 @@ const request = (method, url, data) => {
     });
 };
 
+// 리퀘스트를 날리기 전에 헤더값에 토큰 정보로 설정하는 함수
+export const setAuthInHeader = (token) => {
+  axios.defaults.headers.common["Authorization"] = token
+    ? `Bearer ${token}`
+    : null;
+};
+
 export const board = {
   fetch() {
     return request("get", "/boards");
+  },
+};
+
+export const auth = {
+  login(email, password) {
+    return request("post", "/login", { email, password });
   },
 };
