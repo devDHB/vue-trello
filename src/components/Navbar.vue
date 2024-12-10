@@ -1,27 +1,26 @@
 <template>
   <nav class="header">
     <div class="header-logo">
-      <router-link to="/">Trello-Clone</router-link>
+      <router-link to="/">Home</router-link>
     </div>
     <div class="header-auth">
-      <a v-if="isAuth" href="" @click.prevent="logout">Logout</a>
+      <a href="" v-if="isAuth" @click.prevent="logout">Logout</a>
       <router-link v-else to="/login">Login</router-link>
     </div>
   </nav>
 </template>
 
 <script>
-import { setAuthInHeader } from "../api";
+import { mapGetters, mapMutations } from "vuex";
+
 export default {
   computed: {
-    isAuth() {
-      return !!localStorage.getItem("token");
-    },
+    ...mapGetters(["isAuth"]),
   },
   methods: {
+    ...mapMutations(["LOGOUT"]),
     logout() {
-      delete localStorage.token;
-      setAuthInHeader(null);
+      this.LOGOUT();
       this.$router.push("/login");
     },
   },

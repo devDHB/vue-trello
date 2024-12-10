@@ -1,5 +1,5 @@
 <template>
-  <modal>
+  <Modal>
     <div slot="header">
       <h2>
         Create new board
@@ -12,60 +12,57 @@
       </h2>
     </div>
     <div slot="body">
-      <form id="add-board-form" @submit.prevent="onSubmitCreateBoard">
-        <input
-          class="form-control"
-          type="text"
-          v-model="inputBoardTitle"
-          ref="inputBoardTitle"
-        />
+      <form id="add-board-form" @submit.prevent="addBoard">
+        <input class="form-control" type="text" v-model="input" ref="input" />
       </form>
     </div>
     <div slot="footer">
       <button
         class="btn"
-        :class="{ 'btn-success': isValidInput }"
+        :class="{ 'btn-success': valid }"
         type="submit"
         form="add-board-form"
-        :disabled="!isValidInput"
+        :disabled="!valid"
       >
         Create Board
       </button>
     </div>
-  </modal>
+  </Modal>
 </template>
 
 <script>
-import Modal from "./Modal.vue";
 import { mapMutations, mapActions } from "vuex";
+import Modal from "./Modal.vue";
 
 export default {
-  components: { Modal },
+  components: {
+    Modal,
+  },
   data() {
     return {
-      inputBoardTitle: "",
-      isValidInput: false,
+      input: "",
+      valid: false,
     };
   },
   watch: {
-    inputBoardTitle(val) {
-      this.isValidInput = !!val.trim().length;
+    input(v) {
+      this.valid = v.trim().length > 0;
     },
   },
   mounted() {
-    this.$refs.inputBoardTitle.focus();
+    this.$refs.input.focus();
   },
   methods: {
     ...mapMutations(["SET_IS_ADD_BOARD"]),
-    ...mapActions(["ADD_BOARD"]),
-    onSubmitCreateBoard() {
-      if (!this.inputBoardTitle.trim()) return;
-
-      this.ADD_BOARD(this.inputBoardTitle)
-        .then((id) => this.$router.push(`/board/${id}`))
-        .catch((err) => console.log(err))
-        .finally(() => this.SET_IS_ADD_BOARD(false));
+    ...mapActions(["ADD_BOARD", "FETCH_BOARDS"]),
+    addBoard() {
+      this.SET_IS_ADD_BOARD(false);
+      this.ADD_BOARD({ title: this.input }).then((_) => {
+        this.FETCH_BOARDS();
+      });
     },
   },
 };
 </script>
+
+<style></style>

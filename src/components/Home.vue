@@ -4,32 +4,31 @@
     <div class="board-list" ref="boardList">
       <div
         class="board-item"
-        v-for="(board, i) in boards"
-        :key="i"
-        :data-bgcolor="board.bgColor"
+        v-for="b in boards"
+        :key="b.id"
+        :data-bgcolor="b.bgColor"
         ref="boardItem"
       >
-        <router-link :to="`/boards/${board.id}`">
-          <div class="board-item-title">{{ board.title }}</div>
+        <router-link :to="`/b/${b.id}`">
+          <div class="board-item-title">{{ b.title }}</div>
         </router-link>
       </div>
-      <div class="board-item">
-        <a class="new-board-btn" href="" @click.prevent="addNewBoard">
+      <div class="board-item board-item-new">
+        <a
+          class="new-board-btn"
+          href=""
+          @click.prevent="SET_IS_ADD_BOARD(true)"
+        >
           Create new board...
         </a>
       </div>
     </div>
-    <AddBoard
-      v-if="isAddBoard"
-      @close="isAddBoard = false"
-      @submit="onAddBoard"
-    />
+    <AddBoard v-if="isAddBoard" />
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import { board } from "../api";
+import { mapState, mapMutations, mapActions } from "vuex";
 import AddBoard from "./AddBoard.vue";
 
 export default {
@@ -39,10 +38,14 @@ export default {
   data() {
     return {
       loading: false,
-      boards: [],
       error: "",
-      isAddBoard: false,
     };
+  },
+  computed: {
+    ...mapState({
+      isAddBoard: "isAddBoard",
+      boards: "boards",
+    }),
   },
   created() {
     this.fetchData();
@@ -53,32 +56,13 @@ export default {
     });
   },
   methods: {
+    ...mapMutations(["SET_IS_ADD_BOARD"]),
+    ...mapActions(["FETCH_BOARDS"]),
     fetchData() {
       this.loading = true;
-
-      board.fetch().then((data) => {
-        this.boards = data;
+      this.FETCH_BOARDS().finally((_) => {
+        this.loading = false;
       });
-
-      axios
-        .get("http://localhost:3000/boards")
-        .then((res) => {
-          this.boards = res.data;
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-    addNewBoard() {
-      this.isAddBoard = true;
-    },
-    onAddBoard(title) {
-      console.log(title);
-      // api 호출
-      board
-        .create(title)
-        // 다시 모든 보드목록을 호출해서 화면 갱신
-        .then(() => this.fetchData());
     },
   },
 };
@@ -100,6 +84,9 @@ export default {
   height: 100px;
   margin: 0 2% 20px 0;
   border-radius: 3px;
+}
+.board-item-new {
+  background-color: #ddd;
 }
 .board-item a {
   text-decoration: none;

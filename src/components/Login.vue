@@ -1,6 +1,6 @@
 <template>
   <div class="login">
-    <h2>Login to Trello</h2>
+    <h2>Log in to Trello</h2>
     <form @submit.prevent="onSubmit">
       <div>
         <label for="email">Email</label>
@@ -36,41 +36,34 @@
 </template>
 
 <script>
-import { auth, setAuthInHeader } from "../api";
+import { mapActions } from "vuex";
 
 export default {
   data() {
     return {
       email: "",
       password: "",
-      rPath: "",
       error: "",
+      rPath: "",
     };
   },
   computed: {
     invalidForm() {
-      // 하나라도 채워있지 않으면 로그인버튼을 디스에이블 함
       return !this.email || !this.password;
     },
   },
   created() {
-    // redirect
     this.rPath = this.$route.query.rPath || "/";
   },
   methods: {
+    ...mapActions(["LOGIN"]),
     onSubmit() {
-      auth
-        .login(this.email, this.password)
+      this.LOGIN({ email: this.email, password: this.password })
         .then((data) => {
-          localStorage.setItem("token", data.accessToken);
-          setAuthInHeader(data.accessToken);
           this.$router.push(this.rPath);
         })
         .catch((err) => {
-          this.error =
-            (err.response && err.response.data && err.response.data.error) ||
-            err.message ||
-            "An unknown error occurred.";
+          this.error = err.data.error;
         });
     },
   },

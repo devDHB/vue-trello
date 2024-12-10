@@ -1,39 +1,65 @@
 <template>
-  <div>
-    Board
-    <div v-if="loading">loading board...</div>
-    <div v-else>
-      <div>boardid:{{ boardid }}</div>
-      <router-link :to="`/board/${boardid}/card/1`">Card 1</router-link>
-      <router-link :to="`/board/${boardid}/card/2`">Card 2</router-link>
+  <Modal>
+    <div slot="header">
+      <h2>
+        Create new board
+        <a
+          href=""
+          class="modal-default-button"
+          @click.prevent="SET_IS_ADD_BOARD(false)"
+          >&times;</a
+        >
+      </h2>
     </div>
-
-    <hr />
-
-    <router-view></router-view>
-  </div>
+    <div slot="body">
+      <form id="add-board-form" @submit.prevent="addBoard">
+        <input class="form-control" type="text" v-model="input" ref="input" />
+      </form>
+    </div>
+    <div slot="footer">
+      <button
+        class="btn"
+        :class="{ 'btn-success': valid }"
+        type="submit"
+        form="add-board-form"
+        :disabled="!valid"
+      >
+        Create Board
+      </button>
+    </div>
+  </Modal>
 </template>
 
 <script>
+import { mapMutations, mapActions } from "vuex";
+import Modal from "./Modal.vue";
+
 export default {
+  components: {
+    Modal,
+  },
   data() {
     return {
-      boardid: 0,
-      loading: false,
+      input: "",
+      valid: false,
     };
   },
-  // 브라우저를 불러올때 적용
-  created() {
-    this.fetchData();
+  watch: {
+    input(v) {
+      this.valid = v.trim().length > 0;
+    },
+  },
+  mounted() {
+    this.$refs.input.focus();
   },
   methods: {
-    // 백엔드 api를 호출하고 데이터 요청하는 함수
-    fetchData() {
-      (this.loading = true),
-        setTimeout(() => {
-          this.boardid = this.$route.params.boardid;
-          this.loading = false;
-        }, 500);
+    ...mapMutations(["SET_IS_ADD_BOARD"]),
+    ...mapActions(["ADD_BOARD", "FETCH_BOARDS"]),
+    addBoard() {
+      this.SET_IS_ADD_BOARD(false);
+      this.ADD_BOARD({ title: this.input }).then((_) => {
+        this.FETCH_BOARDS();
+      });
     },
   },
 };
