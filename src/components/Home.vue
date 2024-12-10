@@ -1,37 +1,56 @@
 <template>
   <div>
-    Home
-    <div>
-      Board List :
-      <div v-if="loading">loading board...</div>
-      <div v-else>
-        <div v-for="board in boards" :key="board.id">{{ board }}</div>
+    <div class="home-title">Personal Boards</div>
+    <div class="board-list" ref="boardList">
+      <div
+        class="board-item"
+        v-for="(board, i) in boards"
+        :key="i"
+        :data-bgcolor="board.bgColor"
+        ref="boardItem"
+      >
+        <router-link :to="`/boards/${board.id}`">
+          <div class="board-item-title">{{ board.title }}</div>
+        </router-link>
       </div>
-      <ul>
-        <li>
-          <router-link to="/board/1">Board 1</router-link>
-        </li>
-        <li>
-          <router-link to="/board/2">Board 2</router-link>
-        </li>
-      </ul>
+      <div class="board-item">
+        <a class="new-board-btn" href="" @click.prevent="addNewBoard">
+          Create new board...
+        </a>
+      </div>
     </div>
+    <AddBoard
+      v-if="isAddBoard"
+      @close="isAddBoard = false"
+      @submit="onAddBoard"
+    />
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import { board } from "../api";
+import AddBoard from "./AddBoard.vue";
 
 export default {
+  components: {
+    AddBoard,
+  },
   data() {
     return {
       loading: false,
       boards: [],
+      error: "",
+      isAddBoard: false,
     };
   },
   created() {
     this.fetchData();
+  },
+  updated() {
+    this.$refs.boardItem.forEach((el) => {
+      el.style.backgroundColor = el.dataset.bgcolor;
+    });
   },
   methods: {
     fetchData() {
@@ -50,58 +69,62 @@ export default {
           this.loading = false;
         });
     },
+    addNewBoard() {
+      this.isAddBoard = true;
+    },
+    onAddBoard(title) {
+      console.log(title);
+      // api 호출
+      board
+        .create(title)
+        // 다시 모든 보드목록을 호출해서 화면 갱신
+        .then(() => this.fetchData());
+    },
   },
 };
 </script>
 
 <style>
-html,
-body,
-#app {
-  height: 100%;
-  margin: 0px;
+.home-title {
+  padding: 10px;
+  font-size: 18px;
+  font-weight: bold;
 }
-#app {
+.board-list {
+  padding: 10px;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
 }
-.container {
-  flex-grow: 1;
-  position: relative;
-}
-.btn {
+.board-item {
+  width: 23%;
+  height: 100px;
+  margin: 0 2% 20px 0;
   border-radius: 3px;
-  padding: 6px 8px;
-  background-color: #e2e4e6;
-  border: none;
-  display: inline-block;
-  color: #fff;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 700;
-  cursor: pointer;
 }
-.btn-success {
-  background-color: #5aac44;
-  box-shadow: 0 1px 0 #519839;
-}
-.form-control {
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #e2e4e6;
-  border: 1px solid #cdd2d4;
-  border-radius: 3px;
+.board-item a {
+  text-decoration: none;
   display: block;
-  margin-bottom: 12px;
-  padding: 6px 8px;
-  transition: background-color 0.3s;
+  width: 100%;
+  height: 100%;
 }
-input[type="text"].form-control,
-input[type="password"].form-control,
-textarea.form-control {
-  font-size: 14px;
+.board-item a:hover,
+.board-item a:focus {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #666;
 }
-.form-control:focus {
-  background-color: #fff;
+.board-item-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 10px;
+}
+.board-item a.new-board-btn {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  height: 100px;
+  width: inherit;
+  color: #888;
+  font-weight: 700;
 }
 </style>
