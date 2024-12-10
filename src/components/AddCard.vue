@@ -45,12 +45,12 @@ export default {
         (_) => (this.inputTitle = "")
       );
     },
-    setupClickOutside(el) {
-      document.querySelector("body").addEventListener("click", (e) => {
-        if (el.contains(e.target)) return;
-        this.$emit("close");
-      });
-    },
+    // setupClickOutside(el) {
+    //   document.querySelector("body").addEventListener("click", (e) => {
+    //     if (el.contains(e.target)) return;
+    //     this.$emit("close");
+    //   });
+    // },
   },
 };
 </script>
